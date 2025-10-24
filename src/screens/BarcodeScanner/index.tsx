@@ -1,22 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { BarcodeScanner } from '../../components/BarcodeScanner/BarcodeScanner';
 
-export const BarcodeScanner = () => {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Barcode Scanner</Text>
-    </View>
-  );
+export const BarcodeScannerScreen = () => {
+  return <BarcodeScanner />;
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-});

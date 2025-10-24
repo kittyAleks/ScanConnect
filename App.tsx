@@ -4,11 +4,11 @@
  *
  * @format
  */
-
 import { StatusBar, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { MainStack } from './src/navigation/MainStack';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -23,9 +23,11 @@ function App() {
 
 function AppContent() {
   return (
-    <NavigationContainer>
-      <MainStack />
-    </NavigationContainer>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer>
+        <MainStack />
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
 
