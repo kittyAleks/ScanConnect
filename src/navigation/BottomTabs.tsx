@@ -1,7 +1,14 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { BarcodeScannerScreen, WiFi, Events, Map, Home } from '../screens';
-import { Platform } from 'react-native';
+import { BarcodeScannerScreen, WiFi, Events, Map } from '../screens';
+import { Platform, Text } from 'react-native';
+export type IconProps = {
+  color: string;
+  glyph: string;
+};
+const Icon = ({ color, glyph }: IconProps) => (
+  <Text style={{ color, fontSize: 25 }}>{glyph}</Text>
+);
 
 const Tab = createBottomTabNavigator();
 
@@ -26,17 +33,11 @@ export const BottomTabs = () => {
       }}
     >
       <Tab.Screen
-        name="Home"
-        component={Home}
-        options={{
-          tabBarLabel: 'Home',
-        }}
-      />
-      <Tab.Screen
         name="Scanner"
         component={BarcodeScannerScreen}
         options={{
           tabBarLabel: 'Scanner',
+          tabBarIcon: ({ color }) => <Icon color={color} glyph="▦" />,
         }}
       />
 
@@ -45,6 +46,7 @@ export const BottomTabs = () => {
         component={WiFi}
         options={{
           tabBarLabel: 'WiFi',
+          tabBarIcon: ({ color }) => <Icon color={color} glyph="≋" />,
         }}
       />
 
@@ -53,6 +55,7 @@ export const BottomTabs = () => {
         component={Map}
         options={{
           tabBarLabel: 'Map',
+          tabBarIcon: ({ color }) => <Icon color={color} glyph="⌖" />,
         }}
       />
 
@@ -61,6 +64,7 @@ export const BottomTabs = () => {
         component={Events}
         options={{
           tabBarLabel: 'Events',
+          tabBarIcon: ({ color }) => <Icon color={color} glyph="✎" />,
         }}
       />
     </Tab.Navigator>

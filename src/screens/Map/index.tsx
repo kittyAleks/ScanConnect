@@ -7,7 +7,7 @@ import {
   Text,
   StyleSheet,
 } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import { useWifiStore } from '../../store/wifiStore';
 import { useEventsStore } from '../../store/eventsStore';
@@ -17,7 +17,7 @@ type LatLng = { latitude: number; longitude: number };
 function generateNearbyCoords(center: LatLng, count: number): LatLng[] {
   const res: LatLng[] = [];
   for (let i = 0; i < count; i++) {
-    const dx = (Math.random() - 0.5) * 0.001; // ~100м
+    const dx = (Math.random() - 0.5) * 0.001;
     const dy = (Math.random() - 0.5) * 0.001;
     res.push({
       latitude: center.latitude + dy,
@@ -95,7 +95,11 @@ export const Map = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <MapView style={{ flex: 1 }} initialRegion={region}>
+      <MapView
+        style={{ flex: 1 }}
+        initialRegion={region}
+        provider={PROVIDER_GOOGLE}
+      >
         {current && (
           <Marker
             coordinate={current}
