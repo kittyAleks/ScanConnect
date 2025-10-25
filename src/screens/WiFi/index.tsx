@@ -1,22 +1,42 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { Button, FlatList, Alert, ActivityIndicator } from 'react-native';
+import { useWifiStore } from '../../store/wifiStore';
+import { useEventsStore } from '../../store/eventsStore';
+import { WiFiItem } from '../../components/WIFI/WiFiItem';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { styles } from './styles';
 
 export const WiFi = () => {
+  const { networks, loading, scanNetworks } = useWifiStore();
+  const { logEvent } = useEventsStore();
+
+  const handleConnect = (ssid: string) => {
+    logEvent('Connect to Wi-Fi', {
+      name: 'Connect to Wi-Fi',
+      date: new Date().toISOString(),
+      details: { ssid },
+    });
+    Alert.alert('Connected', `You are connected to the network ${ssid}`);
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Wi-Fi</Text>
-    </View>
+    <SafeAreaView>
+      <Button title="Scan networks" onPress={scanNetworks} />
+      {loading && <ActivityIndicator style={styles.loadingIndicator} />}
+      {!loading && (
+        <FlatList
+          style={styles.networkList}
+          data={networks}
+          keyExtractor={(item, index) => item.BSSID ?? index.toString()}
+          renderItem={({ item }) => (
+            <WiFiItem
+              ssid={item.SSID}
+              level={item.level}
+              onConnect={() => handleConnect(item.SSID)}
+            />
+          )}
+        />
+      )}
+    </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-});

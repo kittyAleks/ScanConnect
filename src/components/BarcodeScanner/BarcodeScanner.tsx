@@ -9,12 +9,15 @@ import { CameraView } from './CameraView';
 import { styles } from './styles';
 import { SwipeableRow } from '../../shared/SwipeableRow';
 import { BarcodeItem } from '../../shared/BarcodeItem';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const BarcodeScanner = () => {
   const cameraRef = useRef(null);
   const { barcodes, addBarcode, toggleMarked, removeBarcode } =
     useBarcodeStore();
+  console.log('[BarcodeScanner] barcodes', barcodes);
   const { logEvent } = useEventsStore();
+  const insets = useSafeAreaInsets();
 
   const onCodeScanned = useCallback(
     (value: string) => {
