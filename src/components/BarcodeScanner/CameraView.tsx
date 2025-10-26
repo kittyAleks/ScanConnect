@@ -24,7 +24,6 @@ export const CameraView = forwardRef(({ onCodeScanned }: any, ref: any) => {
         );
         setHasPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
       } catch (err) {
-        console.warn('Camera permission error:', err);
         setHasPermission(false);
       }
     } else {

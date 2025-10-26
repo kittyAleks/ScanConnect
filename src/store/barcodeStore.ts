@@ -19,10 +19,10 @@ type BarcodeStoreState = {
   reorderBarcodes: (next: ScannedBarcode[]) => void;
 };
 
-function generateId(value: string): string {
+const generateId = (value: string): string => {
   const randomPart = Math.random().toString(36).slice(2, 8);
   return `${value}-${randomPart}`;
-}
+};
 
 export const useBarcodeStore = create<BarcodeStoreState>()(
   persist(

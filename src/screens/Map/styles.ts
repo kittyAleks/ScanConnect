@@ -1,0 +1,70 @@
+import { StyleSheet } from 'react-native';
+
+export const mapStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  map: {
+    flex: 1,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -50 }, { translateY: -50 }],
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    padding: 20,
+    borderRadius: 12,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  overlay: {
+    position: 'absolute',
+    top: '45%',
+    left: 20,
+    right: 20,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    padding: 16,
+    borderRadius: 12,
+  },
+  message: {
+    textAlign: 'center',
+    fontSize: 15,
+    color: '#333',
+    fontWeight: '500',
+  },
+  errorOverlay: {
+    position: 'absolute',
+    top: '20%',
+    left: 20,
+    right: 20,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.98)',
+    padding: 20,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  errorText: {
+    fontSize: 18,
+    color: '#d32f2f',
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  errorSubtext: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 8,
+    lineHeight: 20,
+  },
+});

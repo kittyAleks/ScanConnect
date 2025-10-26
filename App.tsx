@@ -9,6 +9,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { MainStack } from './src/navigation/MainStack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useEventsStore } from './src/store/eventsStore';
+import { useEffect } from 'react';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -24,6 +26,12 @@ function App() {
 }
 
 function AppContent() {
+  const { logEvent } = useEventsStore();
+
+  useEffect(() => {
+    logEvent('App opened');
+  }, [logEvent]);
+
   return (
     <NavigationContainer>
       <MainStack />

@@ -1,28 +1,10 @@
 import React, { useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useEventsStore } from '../../store/eventsStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './styles';
-
-function formatDate(ts: number): string {
-  const date = new Date(ts);
-  const pad = (n: number) => `${n}`.padStart(2, '0');
-  const yyyy = date.getFullYear();
-  const MM = pad(date.getMonth() + 1);
-  const dd = pad(date.getDate());
-  const hh = pad(date.getHours());
-  const mm = pad(date.getMinutes());
-  const ss = pad(date.getSeconds());
-  return `${dd}.${MM}.${yyyy} ${hh}:${mm}:${ss}`;
-}
+import { formatDate } from '../../utils';
 
 function ItemSeparator() {
   return <View style={styles.separator} />;
