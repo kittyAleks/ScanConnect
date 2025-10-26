@@ -34,7 +34,9 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We use your location to show nearby Wi‑Fi networks on the map</string>
+	<string>This app needs your location to show your position on the map.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs location access even when running in the background.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -53,5 +55,7 @@
 	<false/>
 	<key>NSCameraUsageDescription</key>
 	<string>We need camera access to scan codes</string>
+	<key>GMSApiKey</key>
+	<string>AIzaSyDUTsUdfDNSmH-H-LdUdbo5ite4wKIEoNQ</string>
 </dict>
 </plist>

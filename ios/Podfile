@@ -16,8 +16,6 @@ end
 
 target 'ScanConnect' do
   config = use_native_modules!
-  pod 'GoogleMaps'
-  pod 'Google-Maps-iOS-Utils'
 
   use_react_native!(
     :path => config[:reactNativePath],
