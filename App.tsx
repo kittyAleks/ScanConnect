@@ -11,6 +11,7 @@ import { MainStack } from './src/navigation/MainStack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useEventsStore } from './src/store/eventsStore';
 import { useEffect } from 'react';
+import Toast from 'react-native-toast-message';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -20,6 +21,7 @@ function App() {
       <SafeAreaProvider>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
         <AppContent />
+        <Toast />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

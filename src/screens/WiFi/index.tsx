@@ -5,6 +5,7 @@ import { useEventsStore } from '../../store/eventsStore';
 import { WiFiItem } from '../../components/WIFI/WiFiItem';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './styles';
+import { sendPushNotification } from '../../utils/notifications';
 
 export const WiFi = () => {
   const { networks, loading, scanNetworks } = useWifiStore();
@@ -16,7 +17,10 @@ export const WiFi = () => {
       date: new Date().toISOString(),
       details: { ssid },
     });
-    Alert.alert('Connected', `You are connected to the network ${ssid}`);
+    sendPushNotification(
+      'Wi-Fi Connected',
+      `Successfully connected to ${ssid}`,
+    );
   };
 
   return (
