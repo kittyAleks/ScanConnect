@@ -3,13 +3,20 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import WifiManager from 'react-native-wifi-reborn';
 import { Platform, Alert } from 'react-native';
+import Geolocation from '@react-native-community/geolocation';
+import {
+  requestLocationPermission,
+  requestWiFiPermissions,
+} from '../hooks/usePermissions';
 import { useEventsStore } from './eventsStore';
-import { requestWiFiPermissions } from '../hooks/usePermissions';
+type LatLng = { latitude: number; longitude: number };
 
 type WifiNetwork = {
   SSID: string;
   BSSID?: string;
   level?: number;
+  coord?: LatLng;
+  scannedAt?: number;
 };
 
 type WifiStore = {
@@ -77,7 +84,30 @@ export const useWifiStore = create<WifiStore>()(
             const res = await (WifiManager as any).loadWifiList();
             results = res;
           }
-          set({ networks: results, loading: false });
+
+          let coord: LatLng | undefined;
+          const locGranted = await requestLocationPermission();
+          if (locGranted) {
+            coord = await new Promise<LatLng | undefined>(resolve => {
+              Geolocation.getCurrentPosition(
+                (pos: any) =>
+                  resolve({
+                    latitude: pos.coords.latitude,
+                    longitude: pos.coords.longitude,
+                  }),
+                () => resolve(undefined),
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 },
+              );
+            });
+          }
+
+          const withCoords = results.map(item => ({
+            ...item,
+            coord,
+            scannedAt: Date.now(),
+          }));
+
+          set({ networks: withCoords, loading: false });
         } catch {
           set({ loading: false });
         }

@@ -7,19 +7,6 @@ import { mapStyles } from './styles';
 import { useLocation } from '../../hooks/useLocation';
 import type { LatLng } from '../../hooks/useLocation';
 
-function generateNearbyCoords(center: LatLng, count: number): LatLng[] {
-  const res: LatLng[] = [];
-  for (let i = 0; i < count; i++) {
-    const dx = (Math.random() - 0.5) * 0.001;
-    const dy = (Math.random() - 0.5) * 0.001;
-    res.push({
-      latitude: center.latitude + dy,
-      longitude: center.longitude + dx,
-    });
-  }
-  return res;
-}
-
 export const Map = () => {
   const networks = useWifiStore(state => state.networks);
   const { logEvent } = useEventsStore();
@@ -35,14 +22,16 @@ export const Map = () => {
   }, [logEvent]);
 
   const wifiMarkers = useMemo(() => {
-    if (!current || !networks.length || isLoadingLocation) return [];
-    const coords = generateNearbyCoords(current, networks.length);
-    return coords.map((c, i) => ({
-      ssid: networks[i]?.SSID ?? `Wi-Fi ${i + 1}`,
-      coord: c,
-      key: `wifi-${i}-${networks[i]?.SSID || 'unknown'}`,
-    }));
-  }, [current, networks, isLoadingLocation]);
+    if (!networks.length) return [];
+    // Prefer real saved coords. If нет coord, не показываем.
+    return networks
+      .filter(n => !!n.coord)
+      .map((n, i) => ({
+        ssid: n.SSID ?? `Wi-Fi ${i + 1}`,
+        coord: n.coord as LatLng,
+        key: `wifi-${i}-${n.SSID || 'unknown'}`,
+      }));
+  }, [networks]);
 
   const noWifi = !networks.length;
 
@@ -80,7 +69,6 @@ export const Map = () => {
         )}
         {wifiMarkers &&
           wifiMarkers.length > 0 &&
-          current &&
           isMapReady &&
           wifiMarkers.map(m => (
             <Marker
