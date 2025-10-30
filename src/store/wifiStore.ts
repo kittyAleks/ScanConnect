@@ -95,17 +95,43 @@ export const useWifiStore = create<WifiStore>()(
                     latitude: pos.coords.latitude,
                     longitude: pos.coords.longitude,
                   }),
-                () => resolve(undefined),
+                (_err: any) => {
+                  Geolocation.getCurrentPosition(
+                    (pos2: any) =>
+                      resolve({
+                        latitude: pos2.coords.latitude,
+                        longitude: pos2.coords.longitude,
+                      }),
+                    (_err2: any) => {
+                      resolve(undefined);
+                    },
+                    {
+                      enableHighAccuracy: false,
+                      timeout: 15000,
+                      maximumAge: 60000,
+                    },
+                  );
+                },
                 { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 },
               );
             });
           }
 
+          const scannedAt = Date.now();
           const withCoords = results.map(item => ({
             ...item,
             coord,
-            scannedAt: Date.now(),
+            scannedAt,
           }));
+
+          const withCoordCount = withCoords.filter(n => !!n.coord).length;
+          logEvent('Wi-Fi scan results', {
+            total: withCoords.length,
+            withCoords: withCoordCount,
+            coordAttached: Boolean(coord),
+            coord,
+            scannedAt,
+          });
 
           set({ networks: withCoords, loading: false });
         } catch {

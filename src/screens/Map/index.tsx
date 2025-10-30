@@ -5,7 +5,7 @@ import { useWifiStore } from '../../store/wifiStore';
 import { useEventsStore } from '../../store/eventsStore';
 import { mapStyles } from './styles';
 import { useLocation } from '../../hooks/useLocation';
-import type { LatLng } from '../../hooks/useLocation';
+import { buildWifiMarkers } from '../../utils/wifiMarkers';
 
 export const Map = () => {
   const networks = useWifiStore(state => state.networks);
@@ -21,17 +21,10 @@ export const Map = () => {
     logEvent('Display map');
   }, [logEvent]);
 
-  const wifiMarkers = useMemo(() => {
-    if (!networks.length) return [];
-    // Prefer real saved coords. If нет coord, не показываем.
-    return networks
-      .filter(n => !!n.coord)
-      .map((n, i) => ({
-        ssid: n.SSID ?? `Wi-Fi ${i + 1}`,
-        coord: n.coord as LatLng,
-        key: `wifi-${i}-${n.SSID || 'unknown'}`,
-      }));
-  }, [networks]);
+  const wifiMarkers = useMemo(
+    () => buildWifiMarkers(networks as any),
+    [networks],
+  );
 
   const noWifi = !networks.length;
 
