@@ -52,13 +52,11 @@ export const BarcodeScanner = () => {
 
   const renderItem = useCallback(
     ({ item, drag, isActive }: RenderItemParams<ScannedBarcode>) => (
-      <SwipeableRow onDelete={() => handleDelete(item.id)}>
-        <BarcodeItem
-          item={item}
-          onToggleMark={() => handleToggleMark(item.id)}
-          onDrag={drag}
-          isActive={isActive}
-        />
+      <SwipeableRow
+        onDelete={() => handleDelete(item.id)}
+        onMark={() => handleToggleMark(item.id)}
+      >
+        <BarcodeItem item={item} onDrag={drag} isActive={isActive} />
       </SwipeableRow>
     ),
     [handleDelete, handleToggleMark],
