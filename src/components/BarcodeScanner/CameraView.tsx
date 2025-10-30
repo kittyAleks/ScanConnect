@@ -1,35 +1,19 @@
 import React, { forwardRef, useEffect, useState } from 'react';
-import { Platform, PermissionsAndroid } from 'react-native';
 import { Camera } from 'react-native-camera-kit';
 import { styles } from './styles';
 import { FakeCameraPlaceholder } from '../../shared/FakeCameraPlaceholder';
+import { requestCameraPermission } from '../../hooks/usePermissions';
 
 export const CameraView = forwardRef(({ onCodeScanned }: any, ref: any) => {
   const [hasPermission, setHasPermission] = useState(false);
 
   useEffect(() => {
-    requestCameraPermission();
-  }, []);
-
-  const requestCameraPermission = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.CAMERA,
-          {
-            title: 'Camera Permission',
-            message: 'ScanConnect needs access to your camera to scan codes',
-            buttonPositive: 'OK',
-          },
-        );
-        setHasPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
-      } catch (err) {
-        setHasPermission(false);
-      }
-    } else {
-      setHasPermission(true);
+    async function checkPermission() {
+      const granted = await requestCameraPermission();
+      setHasPermission(granted);
     }
-  };
+    checkPermission();
+  }, []);
 
   if (!hasPermission) {
     return <FakeCameraPlaceholder onFakeScan={onCodeScanned} />;

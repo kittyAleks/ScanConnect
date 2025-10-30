@@ -1,5 +1,25 @@
 import { PermissionsAndroid, Platform } from 'react-native';
 
+export const requestCameraPermission = async (): Promise<boolean> => {
+  if (Platform.OS === 'android') {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'Camera Permission',
+          message: 'ScanConnect needs access to your camera to scan codes',
+          buttonPositive: 'OK',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } catch (err: any) {
+      console.error(err);
+      return false;
+    }
+  }
+  return true;
+};
+
 export const requestLocationPermission = async (): Promise<boolean> => {
   if (Platform.OS === 'android') {
     const granted = await PermissionsAndroid.request(

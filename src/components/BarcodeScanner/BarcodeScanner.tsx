@@ -12,7 +12,7 @@ import { BarcodeItem } from '../../shared/BarcodeItem';
 
 export const BarcodeScanner = () => {
   const cameraRef = useRef(null);
-  const { barcodes, addBarcode, toggleMarked, removeBarcode } =
+  const { barcodes, addBarcode, toggleMarked, removeBarcode, reorderBarcodes } =
     useBarcodeStore();
   const { logEvent } = useEventsStore();
 
@@ -43,9 +43,12 @@ export const BarcodeScanner = () => {
     [toggleMarked, logEvent, barcodes],
   );
 
-  const handleDragEnd = useCallback(({ data }: { data: ScannedBarcode[] }) => {
-    // Drag end handled
-  }, []);
+  const handleDragEnd = useCallback(
+    ({ data }: { data: ScannedBarcode[] }) => {
+      reorderBarcodes(data);
+    },
+    [reorderBarcodes],
+  );
 
   const renderItem = useCallback(
     ({ item, drag, isActive }: RenderItemParams<ScannedBarcode>) => (
