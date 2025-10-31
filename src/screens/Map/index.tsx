@@ -20,24 +20,35 @@ export const Map = () => {
   const [isMapReady, setIsMapReady] = useState(false);
   const [wifiMarkers, setWifiMarkers] = useState<any[]>([]);
   const isFocusedRef = useRef(false);
+  const networksRef = useRef(networks);
+
+  useEffect(() => {
+    networksRef.current = networks;
+  }, [networks]);
 
   useFocusEffect(
     useCallback(() => {
       isFocusedRef.current = true;
       logEvent('Display map');
-      requestLocationPermission();
+
+      async function requestLocation() {
+        await requestLocationPermission();
+      }
+      requestLocation();
+
+      const timeoutId = setTimeout(() => {
+        if (isFocusedRef.current) {
+          const markers = buildWifiMarkers(networksRef.current as any);
+          setWifiMarkers(markers);
+        }
+      }, 100);
+
       return () => {
         isFocusedRef.current = false;
+        clearTimeout(timeoutId);
       };
     }, [logEvent]),
   );
-
-  useEffect(() => {
-    if (isFocusedRef.current && isMapReady) {
-      const markers = buildWifiMarkers(networks as any);
-      setWifiMarkers(markers);
-    }
-  }, [networks, isMapReady]);
 
   const noWifi = !networks.length;
 
