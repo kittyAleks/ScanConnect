@@ -1,5 +1,5 @@
-import React, { useCallback, useRef } from 'react';
-import { View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { View, Platform } from 'react-native';
 import DraggableFlatList, {
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
@@ -9,12 +9,25 @@ import { CameraView } from './CameraView';
 import { styles } from './styles';
 import { SwipeableRow } from '../../shared/SwipeableRow';
 import { BarcodeItem } from '../../shared/BarcodeItem';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const BarcodeScanner = () => {
   const cameraRef = useRef(null);
   const { barcodes, addBarcode, toggleMarked, removeBarcode, reorderBarcodes } =
     useBarcodeStore();
   const { logEvent } = useEventsStore();
+  const insets = useSafeAreaInsets();
+
+  const [restartToken, setRestartToken] = useState(0);
+  const prevCountRef = useRef<number>(barcodes.length);
+
+  useEffect(() => {
+    const prev = prevCountRef.current;
+    if (prev > 0 && barcodes.length === 0) {
+      setRestartToken(t => t + 1);
+    }
+    prevCountRef.current = barcodes.length;
+  }, [barcodes.length]);
 
   const onCodeScanned = useCallback(
     (value: string) => {
@@ -62,15 +75,26 @@ export const BarcodeScanner = () => {
     [handleDelete, handleToggleMark],
   );
 
+  const bottomInset = insets.bottom + (Platform.OS === 'ios' ? 85 : 120) + 8;
+
   return (
     <View style={styles.container}>
-      <CameraView ref={cameraRef} onCodeScanned={onCodeScanned} />
+      <CameraView
+        key={`camera-${restartToken}`}
+        ref={cameraRef}
+        onCodeScanned={onCodeScanned}
+      />
       <DraggableFlatList
         data={barcodes}
         keyExtractor={item => item.id}
         renderItem={renderItem}
         onDragEnd={handleDragEnd}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingBottom: bottomInset },
+        ]}
+        showsVerticalScrollIndicator
+        ListFooterComponent={<View style={{ height: bottomInset }} />}
       />
     </View>
   );
