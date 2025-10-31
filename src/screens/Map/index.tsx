@@ -4,7 +4,6 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useWifiStore } from '../../store/wifiStore';
 import { useEventsStore } from '../../store/eventsStore';
 import { mapStyles } from './styles';
-import { useLocation } from '../../hooks/useLocation';
 import { buildWifiMarkers } from '../../utils/wifiMarkers';
 import { useFocusEffect } from '@react-navigation/native';
 import { requestLocationPermission } from '../../hooks/usePermissions';
@@ -12,15 +11,17 @@ import { requestLocationPermission } from '../../hooks/usePermissions';
 export const Map = () => {
   const networks = useWifiStore(state => state.networks);
   const { logEvent } = useEventsStore();
-  const {
-    location: current,
-    isLoading: isLoadingLocation,
-    error: locationError,
-  } = useLocation();
+  const [currentLocation, setCurrentLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(true);
+  const [locationError, setLocationError] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
   const [wifiMarkers, setWifiMarkers] = useState<any[]>([]);
   const isFocusedRef = useRef(false);
   const networksRef = useRef(networks);
+  const mapRef = useRef<MapView>(null);
 
   useEffect(() => {
     networksRef.current = networks;
@@ -30,11 +31,7 @@ export const Map = () => {
     useCallback(() => {
       isFocusedRef.current = true;
       logEvent('Display map');
-
-      async function requestLocation() {
-        await requestLocationPermission();
-      }
-      requestLocation();
+      requestLocationPermission();
 
       const timeoutId = setTimeout(() => {
         if (isFocusedRef.current) {
@@ -55,35 +52,45 @@ export const Map = () => {
   return (
     <View style={mapStyles.container}>
       <MapView
+        ref={mapRef}
         style={mapStyles.map}
         onMapReady={() => setIsMapReady(true)}
-        region={
-          current
-            ? {
-                latitude: current.latitude,
-                longitude: current.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }
-            : {
-                latitude: 50.4501,
-                longitude: 30.5234,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }
-        }
+        {...(currentLocation && {
+          region: {
+            latitude: currentLocation.latitude,
+            longitude: currentLocation.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          },
+        })}
         provider={Platform.OS === 'ios' ? undefined : PROVIDER_GOOGLE}
         showsUserLocation
         showsMyLocationButton
+        onUserLocationChange={e => {
+          const location = e.nativeEvent.coordinate;
+
+          if (location && location.latitude && location.longitude) {
+            setCurrentLocation({
+              latitude: location.latitude,
+              longitude: location.longitude,
+            });
+            setIsLoadingLocation(false);
+            setLocationError(false);
+
+            if (!currentLocation) {
+              mapRef.current?.animateToRegion(
+                {
+                  latitude: location.latitude,
+                  longitude: location.longitude,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                },
+                1000,
+              );
+            }
+          }
+        }}
       >
-        {current && (
-          <Marker
-            coordinate={current}
-            title="You"
-            description="Your current location"
-            pinColor="blue"
-          />
-        )}
         {wifiMarkers &&
           wifiMarkers.length > 0 &&
           isMapReady &&
@@ -97,14 +104,14 @@ export const Map = () => {
           ))}
       </MapView>
 
-      {isLoadingLocation && (
+      {isLoadingLocation && !currentLocation && (
         <View style={mapStyles.loadingOverlay}>
           <ActivityIndicator size="large" color="#6C63FF" />
           <Text style={mapStyles.loadingText}>Getting location...</Text>
         </View>
       )}
 
-      {locationError && !isLoadingLocation && !current && (
+      {locationError && !isLoadingLocation && !currentLocation && (
         <View style={mapStyles.errorOverlay}>
           <Text style={mapStyles.errorText}>⚠️ Location unavailable</Text>
           <Text style={mapStyles.errorSubtext}>

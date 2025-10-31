@@ -25,6 +25,7 @@ export const requestLocationPermission = async (): Promise<boolean> => {
     const checkResult = await PermissionsAndroid.check(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
     );
+
     if (checkResult) {
       return true;
     }
