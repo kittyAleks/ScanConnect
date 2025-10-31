@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { View, Platform, Text, ActivityIndicator } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useWifiStore } from '../../store/wifiStore';
@@ -6,6 +6,8 @@ import { useEventsStore } from '../../store/eventsStore';
 import { mapStyles } from './styles';
 import { useLocation } from '../../hooks/useLocation';
 import { buildWifiMarkers } from '../../utils/wifiMarkers';
+import { useFocusEffect } from '@react-navigation/native';
+import { requestLocationPermission } from '../../hooks/usePermissions';
 
 export const Map = () => {
   const networks = useWifiStore(state => state.networks);
@@ -16,15 +18,26 @@ export const Map = () => {
     error: locationError,
   } = useLocation();
   const [isMapReady, setIsMapReady] = useState(false);
+  const [wifiMarkers, setWifiMarkers] = useState<any[]>([]);
+  const isFocusedRef = useRef(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      isFocusedRef.current = true;
+      logEvent('Display map');
+      requestLocationPermission();
+      return () => {
+        isFocusedRef.current = false;
+      };
+    }, [logEvent]),
+  );
 
   useEffect(() => {
-    logEvent('Display map');
-  }, [logEvent]);
-
-  const wifiMarkers = useMemo(
-    () => buildWifiMarkers(networks as any),
-    [networks],
-  );
+    if (isFocusedRef.current && isMapReady) {
+      const markers = buildWifiMarkers(networks as any);
+      setWifiMarkers(markers);
+    }
+  }, [networks, isMapReady]);
 
   const noWifi = !networks.length;
 
@@ -63,9 +76,9 @@ export const Map = () => {
         {wifiMarkers &&
           wifiMarkers.length > 0 &&
           isMapReady &&
-          wifiMarkers.map(m => (
+          wifiMarkers.map((m, index) => (
             <Marker
-              key={m.key}
+              key={`${m.key}-${index}`}
               coordinate={m.coord}
               title={m.ssid}
               pinColor="red"

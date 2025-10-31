@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, FlatList, Alert, ActivityIndicator } from 'react-native';
+import { Button, FlatList, ActivityIndicator, View, Text } from 'react-native';
 import { useWifiStore } from '../../store/wifiStore';
 import { useEventsStore } from '../../store/eventsStore';
 import { WiFiItem } from '../../components/WIFI/WiFiItem';
@@ -24,23 +24,36 @@ export const WiFi = () => {
   };
 
   return (
-    <SafeAreaView>
-      <Button title="Scan networks" onPress={scanNetworks} />
-      {loading && <ActivityIndicator style={styles.loadingIndicator} />}
-      {!loading && (
-        <FlatList
-          style={styles.networkList}
-          data={networks}
-          keyExtractor={(item, index) => item.BSSID ?? index.toString()}
-          renderItem={({ item }) => (
+    <SafeAreaView style={styles.container}>
+      <Button title="Scan networks" onPress={scanNetworks} disabled={loading} />
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6C63FF" />
+        </View>
+      )}
+      <FlatList
+        style={styles.networkList}
+        data={networks}
+        keyExtractor={(item, index) =>
+          item?.BSSID || item?.SSID || `wifi-${index}`
+        }
+        renderItem={({ item }) =>
+          item?.SSID ? (
             <WiFiItem
               ssid={item.SSID}
               level={item.level}
               onConnect={() => handleConnect(item.SSID)}
             />
-          )}
-        />
-      )}
+          ) : null
+        }
+        ListEmptyComponent={
+          !loading && networks.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No networks found</Text>
+            </View>
+          ) : null
+        }
+      />
     </SafeAreaView>
   );
 };

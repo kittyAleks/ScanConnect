@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import WifiManager from 'react-native-wifi-reborn';
-import { Platform, Alert } from 'react-native';
+import { Platform, Alert, PermissionsAndroid } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import {
   requestLocationPermission,
@@ -32,6 +32,11 @@ export const useWifiStore = create<WifiStore>()(
       loading: false,
 
       scanNetworks: async () => {
+        const state = _get();
+        if (state.loading) {
+          return;
+        }
+
         const { logEvent } = useEventsStore.getState();
 
         if (Platform.OS === 'ios') {
@@ -77,44 +82,80 @@ export const useWifiStore = create<WifiStore>()(
           }
 
           let results: any[] = [];
-          if (hasRescan) {
-            const res = await (WifiManager as any).reScanAndLoadWifiList();
-            results = res;
-          } else if (hasLoad) {
-            const res = await (WifiManager as any).loadWifiList();
-            results = res;
+          try {
+            if (hasRescan) {
+              const res = await (WifiManager as any).reScanAndLoadWifiList();
+              results = Array.isArray(res) ? res : [];
+            } else if (hasLoad) {
+              const res = await (WifiManager as any).loadWifiList();
+              results = Array.isArray(res) ? res : [];
+            }
+          } catch (wifiError: any) {
+            logEvent('Wi-Fi scan library error', {
+              error: wifiError?.message || String(wifiError),
+            });
+            results = [];
           }
 
           let coord: LatLng | undefined;
-          const locGranted = await requestLocationPermission();
-          if (locGranted) {
-            coord = await new Promise<LatLng | undefined>(resolve => {
-              Geolocation.getCurrentPosition(
-                (pos: any) =>
-                  resolve({
-                    latitude: pos.coords.latitude,
-                    longitude: pos.coords.longitude,
-                  }),
-                (_err: any) => {
-                  Geolocation.getCurrentPosition(
-                    (pos2: any) =>
+          try {
+            const hasLocationPermission =
+              Platform.OS === 'android'
+                ? await PermissionsAndroid.check(
+                    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                  )
+                : true;
+
+            const locGranted = hasLocationPermission
+              ? true
+              : await requestLocationPermission();
+
+            if (locGranted) {
+              coord = await new Promise<LatLng | undefined>(resolve => {
+                let resolved = false;
+                Geolocation.getCurrentPosition(
+                  (pos: any) => {
+                    if (!resolved) {
+                      resolved = true;
                       resolve({
-                        latitude: pos2.coords.latitude,
-                        longitude: pos2.coords.longitude,
-                      }),
-                    (_err2: any) => {
-                      resolve(undefined);
-                    },
-                    {
-                      enableHighAccuracy: false,
-                      timeout: 15000,
-                      maximumAge: 60000,
-                    },
-                  );
-                },
-                { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 },
-              );
+                        latitude: pos.coords.latitude,
+                        longitude: pos.coords.longitude,
+                      });
+                    }
+                  },
+                  (_err: any) => {
+                    Geolocation.getCurrentPosition(
+                      (pos2: any) => {
+                        if (!resolved) {
+                          resolved = true;
+                          resolve({
+                            latitude: pos2.coords.latitude,
+                            longitude: pos2.coords.longitude,
+                          });
+                        }
+                      },
+                      (_err2: any) => {
+                        if (!resolved) {
+                          resolved = true;
+                          resolve(undefined);
+                        }
+                      },
+                      {
+                        enableHighAccuracy: false,
+                        timeout: 15000,
+                        maximumAge: 60000,
+                      },
+                    );
+                  },
+                  { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 },
+                );
+              });
+            }
+          } catch (locError: any) {
+            logEvent('Location error during Wi-Fi scan', {
+              error: locError?.message || String(locError),
             });
+            coord = undefined;
           }
 
           const scannedAt = Date.now();
@@ -134,8 +175,13 @@ export const useWifiStore = create<WifiStore>()(
           });
 
           set({ networks: withCoords, loading: false });
-        } catch {
-          set({ loading: false });
+        } catch (error: any) {
+          logEvent('Wi-Fi scan crash', {
+            error: error?.message || String(error),
+            stack: error?.stack,
+            name: error?.name,
+          });
+          set({ loading: false, networks: [] });
         }
       },
     }),

@@ -22,6 +22,13 @@ export const requestCameraPermission = async (): Promise<boolean> => {
 
 export const requestLocationPermission = async (): Promise<boolean> => {
   if (Platform.OS === 'android') {
+    const checkResult = await PermissionsAndroid.check(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+    );
+    if (checkResult) {
+      return true;
+    }
+
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       {
@@ -43,16 +50,24 @@ export const requestWiFiPermissions = async (): Promise<boolean> => {
 
   const requests: Array<Promise<string>> = [];
 
-  requests.push(
-    PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      {
-        title: 'Location permission',
-        message: 'Location is required to scan nearby Wi‑Fi networks.',
-        buttonPositive: 'OK',
-      },
-    ),
+  const hasLocation = await PermissionsAndroid.check(
+    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
   );
+
+  if (!hasLocation) {
+    requests.push(
+      PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Location permission',
+          message: 'Location is required to scan nearby Wi‑Fi networks.',
+          buttonPositive: 'OK',
+        },
+      ),
+    );
+  } else {
+    requests.push(Promise.resolve(PermissionsAndroid.RESULTS.GRANTED));
+  }
 
   if (
     Platform.Version >= 33 &&
