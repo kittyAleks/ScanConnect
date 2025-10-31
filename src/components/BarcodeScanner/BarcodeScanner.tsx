@@ -3,6 +3,7 @@ import { View, Platform } from 'react-native';
 import DraggableFlatList, {
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
+import Toast from 'react-native-toast-message';
 import { useBarcodeStore, ScannedBarcode } from '../../store/barcodeStore';
 import { useEventsStore } from '../../store/eventsStore';
 import { CameraView } from './CameraView';
@@ -31,7 +32,17 @@ export const BarcodeScanner = () => {
 
   const onCodeScanned = useCallback(
     (value: string) => {
-      if (barcodes.some(b => b.value === value)) return;
+      const exists = barcodes.some(b => b.value === value);
+      if (exists) {
+        Toast.show({
+          type: 'info',
+          text1: 'Barcode already scanned',
+          text2: 'This barcode has already been added to your list',
+          position: 'top',
+        });
+        return;
+      }
+
       addBarcode({ value });
       logEvent('Barcode scanned', { value });
     },

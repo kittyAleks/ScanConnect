@@ -27,7 +27,9 @@ export const CameraView = forwardRef(({ onCodeScanned }: any, ref: any) => {
       showFrame
       onReadCode={(event: any) => {
         const value = event?.nativeEvent?.codeStringValue;
-        if (value) onCodeScanned(value);
+        if (value) {
+          onCodeScanned(value);
+        }
       }}
       frameColor="#ffffff"
       laserColor="#ff0000"

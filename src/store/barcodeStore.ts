@@ -40,7 +40,8 @@ export const useBarcodeStore = create<BarcodeStoreState>()(
             marked: false,
             scannedAt: Date.now(),
           };
-          return { barcodes: [next, ...state.barcodes] };
+          const newBarcodes = [next, ...state.barcodes];
+          return { barcodes: newBarcodes };
         }),
       toggleMarked: id =>
         set(state => ({
