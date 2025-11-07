@@ -4,6 +4,7 @@ import DraggableFlatList, {
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
 import Toast from 'react-native-toast-message';
+import { useFocusEffect } from '@react-navigation/native';
 import { useBarcodeStore, ScannedBarcode } from '../../store/barcodeStore';
 import { useEventsStore } from '../../store/eventsStore';
 import { CameraView } from './CameraView';
@@ -21,6 +22,7 @@ export const BarcodeScanner = () => {
 
   const [restartToken, setRestartToken] = useState(0);
   const prevCountRef = useRef<number>(barcodes.length);
+  const wasFocusedRef = useRef(false);
 
   useEffect(() => {
     const prev = prevCountRef.current;
@@ -29,6 +31,15 @@ export const BarcodeScanner = () => {
     }
     prevCountRef.current = barcodes.length;
   }, [barcodes.length]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (wasFocusedRef.current) {
+        setRestartToken(t => t + 1);
+      }
+      wasFocusedRef.current = true;
+    }, []),
+  );
 
   const onCodeScanned = useCallback(
     (value: string) => {
@@ -92,6 +103,7 @@ export const BarcodeScanner = () => {
     <View style={styles.container}>
       <CameraView
         key={`camera-${restartToken}`}
+        cameraKey={restartToken}
         ref={cameraRef}
         onCodeScanned={onCodeScanned}
       />
